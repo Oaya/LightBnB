@@ -1,13 +1,15 @@
-const { Pool } = require("pg");
+const { Client } = require("pg");
 const properties = require("./json/properties.json");
 const users = require("./json/users.json");
 
-const pool = new Pool({
+const client = new Client({
   user: "vagrant",
   password: "123",
   host: "localhost",
   database: "lightbnb",
 });
+
+client.connect();
 /// Users
 
 /**
@@ -19,7 +21,7 @@ const getUserWithEmail = function (email) {
   const queryString = `SELECT * FROM users WHERE email = $1;`;
   const value = [email];
 
-  return pool
+  return client
     .query(queryString, value)
     .then((result) => {
       if (!result) {
@@ -42,7 +44,7 @@ exports.getUserWithEmail = getUserWithEmail;
 const getUserWithId = function (id) {
   const queryString = `SELECT * FROM users WHERE id = $1;`;
   const value = [id];
-  return pool
+  return client
     .query(queryString, value)
     .catch((result) => {
       if (!result) {
@@ -66,7 +68,7 @@ const addUser = function (user) {
   VALUES($1, $2, $3)RETURNING *;
   `;
   const values = [user.name, user.email, user.password];
-  return pool
+  return client
     .query(queryString, values)
     .then((result) => {
       return Promise.resolve(result);
@@ -105,7 +107,7 @@ exports.getAllReservations = getAllReservations;
 const getAllProperties = (options, limit = 10) => {
   const queryString = `SELECT * FROM properties LIMIT $1;`;
   const value = [limit];
-  return pool
+  return client
     .query(queryString, value)
     .then((result) => result.rows)
     .catch((err) => {
