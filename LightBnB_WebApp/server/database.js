@@ -24,11 +24,8 @@ const getUserWithEmail = function (email) {
   return client
     .query(queryString, value)
     .then((result) => {
-      if (!result) {
-        return null;
-      }
       console.log(`rows`, result.rows);
-      return Promise.resolve(result.rows[0]);
+      return result.rows[0];
     })
     .catch((err) => {
       console.log(`login Error: ${err.message}`);
@@ -46,11 +43,8 @@ const getUserWithId = function (id) {
   const value = [id];
   return client
     .query(queryString, value)
-    .catch((result) => {
-      if (!result) {
-        return null;
-      }
-      return Promise.resolve(result.rows[0]);
+    .then((result) => {
+      return result.rows[0];
     })
     .catch((err) => {
       console.log(`get user id Error: ${err.message}`);
@@ -71,7 +65,7 @@ const addUser = function (user) {
   return client
     .query(queryString, values)
     .then((result) => {
-      return Promise.resolve(result);
+      return result.rows[0];
     })
     .catch((err) => {
       console.log(`adduser Error : ${err.message}`);
@@ -132,7 +126,25 @@ const getAllProperties = (options, limit = 10) => {
     queryParams.push(`%${options.city}%`);
     queryString += `WHERE city LIKE $${queryParams.length}`;
   }
+  //if owner_id is passed//
+  if (options.owner_id) {
+    if (options.city) {
+      queryString += `AND`;
+    } else {
+      queryString += `WHERE `;
+    }
+    queryParams.push(`%${options.owner_id}%`);
+    queryString += ` properties.owner_id  = $${queryParams.length}`;
+  }
+  // if (options.minimum_price_per_night && options.maximum_price_per_night) {
+  //   if (options.city || options.Owner_id) {
+  //     queryString +=`AND`
 
+  //   } else {
+  //     queryString +=`WHERE`
+  //   }
+  //   queryString += cost_per_night / 100 = BETWEEN $${options.maxmum_price_per_night} AND $${options.minmum_price_per_night};
+  // }
   queryParams.push(limit);
   queryString += `GROUP BY properties.id
   ORDER BY cost_per_night
@@ -143,7 +155,7 @@ const getAllProperties = (options, limit = 10) => {
   return client
     .query(queryString, queryParams)
     .then((result) => {
-      result.rows;
+      return result.rows;
     })
     .catch((err) => {
       console.log(err.message);
