@@ -16,16 +16,21 @@ const pool = new Pool({
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function (email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
+  const queryString = `SELECT * FROM users WHERE email = $1;`;
+  const value = [email];
+
+  return pool
+    .query(queryString, value)
+    .then((result) => {
+      if (!result) {
+        return null;
+      }
+      console.log(`rows`, result.rows);
+      return Promise.resolve(result.rows[0]);
+    })
+    .catch((err) => {
+      console.log(`login Error: ${err.message}`);
+    });
 };
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -35,7 +40,19 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function (id) {
-  return Promise.resolve(users[id]);
+  const queryString = `SELECT * FROM users WHERE id = $1;`;
+  const value = [id];
+  return pool
+    .query(queryString, value)
+    .catch((result) => {
+      if (!result) {
+        return null;
+      }
+      return Promise.resolve(result.rows[0]);
+    })
+    .catch((err) => {
+      console.log(`get user id Error: ${err.message}`);
+    });
 };
 exports.getUserWithId = getUserWithId;
 
@@ -45,10 +62,22 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser = function (user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
+  const queryString = `INSERT INTO users (name, email, password)
+  VALUES($1, $2, $3)RETURNING *;
+  `;
+  const values = [user.name, user.email, user.password];
+  return pool
+    .query(queryString, values)
+    .then((result) => {
+      return Promise.resolve(result);
+    })
+    .catch((err) => {
+      console.log(`adduser Error : ${err.message}`);
+    });
+  //   const userId = Object.keys(users).length + 1;
+  // user.id = userId;
+  // users[userId] = user;
+  // return Promise.resolve(user);
 };
 exports.addUser = addUser;
 
@@ -74,12 +103,15 @@ exports.getAllReservations = getAllReservations;
  */
 
 const getAllProperties = (options, limit = 10) => {
+  const queryString = `SELECT * FROM properties LIMIT $1;`;
+  const value = [limit];
   return pool
-    .query(`SELECT * FROM properties LIMIT $1`, [limit])
+    .query(queryString, value)
     .then((result) => result.rows)
     .catch((err) => {
       console.log(err.message);
     });
+  // return Promise.resolve(property);
 };
 exports.getAllProperties = getAllProperties;
 
