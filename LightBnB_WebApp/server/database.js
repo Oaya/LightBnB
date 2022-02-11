@@ -1,5 +1,4 @@
 const { Client } = require("pg");
-const { emptyQuery } = require("pg-protocol/dist/messages");
 const properties = require("./json/properties.json");
 const users = require("./json/users.json");
 
@@ -40,11 +39,11 @@ exports.getUserWithEmail = getUserWithEmail;
  */
 const getUserWithId = function (id) {
   const queryString = `SELECT * FROM users WHERE id = $1;`;
-  const value = [id];
+  const queryParams = [id];
   return client
-    .query(queryString, value)
+    .query(queryString, queryParams)
     .then((result) => {
-      return result.rows[0];
+      result.rows[0];
     })
     .catch((err) => {
       console.log(`get user id Error: ${err.message}`);
@@ -61,9 +60,9 @@ const addUser = function (user) {
   const queryString = `INSERT INTO users (name, email, password)
   VALUES($1, $2, $3)RETURNING *;
   `;
-  const values = [user.name, user.email, user.password];
+  const queryParams = [user.name, user.email, user.password];
   return client
-    .query(queryString, values)
+    .query(queryString, queryParams)
     .then((result) => {
       return result.rows[0];
     })
@@ -88,11 +87,10 @@ const getAllReservations = function (guest_id, limit = 10) {
    ORDER BY start_date
    LIMIT $2;
   `;
-  const values = [guest_id, limit];
+  const queryParams = [guest_id, limit];
   return client
-    .query(queryString, values)
+    .query(queryString, queryParams)
     .then((result) => {
-      console.log(`getReservation , ${result.rows}`);
       return result.rows;
     })
     .catch((err) => {
@@ -195,7 +193,9 @@ const addProperty = function (property) {
 
   return client
     .query(queryString, queryParams)
-    .then((result) => result.rows[0])
+    .then((result) => {
+      return result.rows[0];
+    })
     .catch((err) => {
       console.log(`insert new property Error: ${err.message}`);
     });
