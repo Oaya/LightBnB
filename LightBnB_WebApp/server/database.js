@@ -1,15 +1,7 @@
-const { Client } = require("pg");
+const { query } = require("../db/index.js");
 const properties = require("./json/properties.json");
 const users = require("./json/users.json");
 
-const client = new Client({
-  user: "vagrant",
-  password: "123",
-  host: "localhost",
-  database: "lightbnb",
-});
-
-client.connect();
 /// Users
 
 /**
@@ -21,8 +13,7 @@ const getUserWithEmail = function (email) {
   const queryString = `SELECT * FROM users WHERE email = $1;`;
   const value = [email];
 
-  return client
-    .query(queryString, value)
+  return query(queryString, value)
     .then((result) => {
       return result.rows[0];
     })
@@ -40,8 +31,7 @@ exports.getUserWithEmail = getUserWithEmail;
 const getUserWithId = function (id) {
   const queryString = `SELECT * FROM users WHERE id = $1;`;
   const queryParams = [id];
-  return client
-    .query(queryString, queryParams)
+  return query(queryString, queryParams)
     .then((result) => {
       result.rows[0];
     })
@@ -61,8 +51,7 @@ const addUser = function (user) {
   VALUES($1, $2, $3)RETURNING *;
   `;
   const queryParams = [user.name, user.email, user.password];
-  return client
-    .query(queryString, queryParams)
+  return query(queryString, queryParams)
     .then((result) => {
       return result.rows[0];
     })
@@ -88,8 +77,7 @@ const getAllReservations = function (guest_id, limit = 10) {
    LIMIT $2;
   `;
   const queryParams = [guest_id, limit];
-  return client
-    .query(queryString, queryParams)
+  return query(queryString, queryParams)
     .then((result) => {
       return result.rows;
     })
@@ -154,8 +142,7 @@ const getAllProperties = (options, limit = 10) => {
 
   console.log(queryString, queryParams);
 
-  return client
-    .query(queryString, queryParams)
+  return query(queryString, queryParams)
     .then((result) => {
       return result.rows;
     })
@@ -191,8 +178,7 @@ const addProperty = function (property) {
     property.post_code,
   ];
 
-  return client
-    .query(queryString, queryParams)
+  return query(queryString, queryParams)
     .then((result) => {
       return result.rows[0];
     })
